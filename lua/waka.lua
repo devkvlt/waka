@@ -21,7 +21,7 @@ local function update_wakatime()
   local stdout = uv.new_pipe()
   local stderr = uv.new_pipe()
 
-  local on_exit = function(_, _)
+  local function on_exit(code, signal)
     stdin:close()
     stdout:close()
     stderr:close()
@@ -39,7 +39,10 @@ local function update_wakatime()
   }, on_exit)
 
   uv.read_start(stdout, function(err, data)
-    assert(not err, err)
+    if err then
+      vim.notify('Error reading stdout: ' .. err, vim.log.levels.ERROR)
+      return
+    end
 
     if data then
       today = data
